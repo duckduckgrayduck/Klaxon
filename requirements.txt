@@ -1,2 +1,4 @@
-python-documentcloud==3.3.6
+python-documentcloud==3.3.9
 requests
+savepagenow
+difflib
