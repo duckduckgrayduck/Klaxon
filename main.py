@@ -1,38 +1,27 @@
 """
-This is a hello world add-on for DocumentCloud.
-
-It demonstrates how to write a add-on which can be activated from the
-DocumentCloud add-on system and run using Github Actions.  It receives data
-from DocumentCloud via the request dispatch and writes data back to
-DocumentCloud using the standard API
+This is the Klaxon Site Monitor Add-On, that allows you to monitor webpages for changes and get alerted if portions of the page change. 
 """
 
 from documentcloud.addon import AddOn
+from bs4 import BeautifulSoup
+import requests
+import savepagenow
 
-
-class HelloWorld(AddOn):
-    """An example Add-On for DocumentCloud."""
+class Klaxon(AddOn):
+    """Add-On that will monitor a site for changes and alert you for updates"""
 
     def main(self):
-        """The main add-on functionality goes here."""
-        # fetch your add-on specific data
-        name = self.data.get("name", "world")
-
-        self.set_message("Hello World start!")
-
-        # add a hello note to the first page of each selected document
-        for document in self.get_documents():
-            # get_documents will iterate through all documents efficiently,
-            # either selected or by query, dependeing on which is passed in
-            document.annotations.create(f"Hello {name}!", 0)
-
-        with open("hello.txt", "w+") as file_:
-            file_.write("Hello world!")
-            self.upload_file(file_)
-
-        self.set_message("Hello World end!")
+        site = self.data.get("site")
+        project = self.data["project"]
+        # if project is an integer, use it as a project ID
+        try:
+            self.project = int(project)
+        except ValueError:
+            project, created = self.client.projects.get_or_create_by_title(project)
+            self.project = project.id
+        
         self.send_mail("Hello World!", "We finished!")
 
 
 if __name__ == "__main__":
-    HelloWorld().main()
+    Klaxon().main()
