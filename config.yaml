@@ -21,7 +21,7 @@ properties:
     format: uri
     description: Enter a slack webhook to enable Slack notifications
 required:
-  - url
+  - site
   - selector
 eventOptions:
   name: site
