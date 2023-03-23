@@ -12,7 +12,7 @@ import savepagenow
 
 class Klaxon(AddOn):
     """Add-On that will monitor a site for changes and alert you for updates"""
-    def monitor_with_selector(site, selector):
+    def monitor_with_selector(self, site, selector):
         # Get the full list of archive.org entries
         response = requests.get(f'http://web.archive.org/cdx/search/cdx?url={site}')
         # Filter only for the successful entries
