@@ -7,7 +7,7 @@ savepagenow to archive pages that are updated.
 from documentcloud.addon import AddOn
 from bs4 import BeautifulSoup
 import requests
-import difflib
+import difflib as dl
 import savepagenow
 
 class Klaxon(AddOn):
