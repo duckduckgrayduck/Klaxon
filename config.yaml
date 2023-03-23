@@ -9,7 +9,6 @@ properties:
     title: Site
     type: string
     format: uri
-    description: 
   selector: 
     title: Selector
     type: string
