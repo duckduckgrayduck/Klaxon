@@ -16,7 +16,7 @@ class Klaxon(AddOn):
         # Get the full list of archive.org entries
         response = requests.get(f'http://web.archive.org/cdx/search/cdx?url={site}')
         # Filter only for the successful entries
-        successul_saves = []
+        successful_saves = []
         for line in response.text.splitlines():
             if ' 200 ' in line:
                 successful_saves.append(line)
