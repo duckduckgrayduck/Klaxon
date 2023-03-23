@@ -56,7 +56,7 @@ class Klaxon(AddOn):
     def main(self):
         site = self.data.get("site")
         selector = self.data.get("selector")
-        monitor_with_selector(site, selector)
+        self.monitor_with_selector(site, selector)
 
 if __name__ == "__main__":
     Klaxon().main()
