@@ -32,7 +32,7 @@ class Klaxon(AddOn):
         old_elements = soup.select(selector)
         # Now going to pull the current version of the site & pull selectors using bsoup
         current_html = requests.get(site)
-        soup2 = BeautifulSoup(current_html, 'html.parser')
+        soup2 = BeautifulSoup(current_html.text, 'html.parser')
         new_elements = soup2.select(selector)
         # If there are no differences between the current site and the last archived site, Add-On ends.
         if old_elements == new_elements:
