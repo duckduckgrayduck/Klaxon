@@ -4,7 +4,6 @@ description: >-
    Get email and Slack notifications when something changes. Provide an optional CSS selector to only monitor 
    portions of a page you are interested in. 
 type: object
-documents: []
 properties:
   site:
     title: Site
