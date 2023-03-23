@@ -15,11 +15,6 @@ properties:
     title: Selector
     type: string
     description: CSS Selector on the page you would like to monitor.
-  slack_webhook:
-    title: Slack Webhook
-    type: string
-    format: uri
-    description: Enter a slack webhook to enable Slack notifications
 required:
   - site
   - selector
