@@ -27,10 +27,10 @@ class Klaxon(AddOn):
             first_seen_url = savepagenow.capture(site)
             self.send_mail(
                 "Klaxon Alert: New Site Archived",
-                f"{site} has never been archived \
-                using the Wayback Machine until now. \n \
-                The first snapshot is now available here: {first_seen_url} \n \
-                We will alert you if changes are made during the next run.",
+                f"{site} has never been archived "
+                "using the Wayback Machine until now.\n"
+                f"The first snapshot is now available here: {first_seen_url} \n"
+                "We will alert you if changes are made during the next run."
             )
             sys.exit(0)
 
@@ -55,8 +55,8 @@ class Klaxon(AddOn):
         last_save = successful_saves[-1]
         res = re.search("\d{14}", last_save)
         if res is None:
-            self.send_mail("Klaxon Runtime Error", f"Regex failed to find a timestamp \
-            for url {site}. \n Please forward this email to info@documentcloud.org")
+            self.send_mail("Klaxon Runtime Error", "Regex failed to find a timestamp "
+            f"for url {site}. \n Please forward this email to info@documentcloud.org")
             sys.exit(1)
         timestamp = res.group()
         # Generate the URL for the last successful save's raw HTML file
@@ -94,13 +94,12 @@ class Klaxon(AddOn):
             try:
                 new_archive_url = savepagenow.capture(site)
             except savepagenow.exceptions.WaybackRuntimeError:
-                new_archive_url = f"New snapshot failed, please archive \
-                {site} manually at https://web.archive.org/"
+                new_archive_url = f"New snapshot failed, please archive {site} \
+                manually at https://web.archive.org/"
 
             self.send_mail(
-                "Klaxon Alert: Site Updated", f"Get results here: {file_url} \n \
-                New snapshot: {new_archive_url}\
-                "
+                "Klaxon Alert: Site Updated", f"Get results here: {file_url} \n"
+                f"New snapshot: {new_archive_url}"
             )
 
     def main(self):
