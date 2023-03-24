@@ -54,6 +54,10 @@ class Klaxon(AddOn):
         # Get the last successful entry & timestamp for that entry
         last_save = successful_saves[-1]
         res = re.search("\d{14}", last_save)
+        if res is None:
+            self.send_mail("Klaxon Runtime Error", f"Regex failed to find a timestamp \
+            for url {site}. \n Please forward this email to info@documentcloud.org")
+            sys.exit(1)
         timestamp = res.group()
         # Generate the URL for the last successful save's raw HTML file
         full_url = f"https://web.archive.org/web/{timestamp}id_/{site}"
