@@ -6,6 +6,7 @@ savepagenow to archive pages that are updated.
 """
 from documentcloud.addon import AddOn
 from bs4 import BeautifulSoup
+from pathlib import Path
 import requests
 import difflib as dl
 import savepagenow
@@ -48,8 +49,11 @@ class Klaxon(AddOn):
                 new_tags.append(y.prettify())
             # Generates HTML view that shows diffs in a pretty format
             html_diff = dl.HtmlDiff().make_file(old_tags, new_tags, context=True)
-            # Sends the diff as an alert to the user's email
-            self.send_mail("Klaxon Alert: Site Updated", html_diff)
+            
+            # Sends the diff as an alert to the user's email -- need to add HTML support to email for this to work correctly
+            # self.send_mail("Klaxon Alert: Site Updated", html_diff)
+            Path('diff.html').write_text(html_diff)
+            self.upload_file('diff.html')
             # Captures the more recent version of the site in Wayback. 
             savepagenow.capture(site)
 
