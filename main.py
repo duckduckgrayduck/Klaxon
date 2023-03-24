@@ -57,7 +57,7 @@ class Klaxon(AddOn):
             Path('diff.html').write_text(html_diff)
             self.upload_file(open("diff.html"))
             # Captures the more recent version of the site in Wayback. 
-            # savepagenow.capture(site)
+            savepagenow.capture(site)
 
     def main(self):
         site = self.data.get("site")
