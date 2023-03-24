@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 import requests
 import re 
+import sys
 import difflib as dl
 import savepagenow
 
