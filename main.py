@@ -28,7 +28,7 @@ class Klaxon(AddOn):
             self.send_mail(
                 "Klaxon Alert: New Site Archived",
                 f"The site you provided: {site} has never been archived \
-                using the Wayback Machine until now. \
+                using the Wayback Machine until now. \n \
                 We will alert you if changes are made during the next run.",
             )
             sys.exit(0)
@@ -84,12 +84,19 @@ class Klaxon(AddOn):
             self.upload_file(open("diff.html"))
             resp = self.client.get(f"addon_runs/{self.id}/")
             file_url = resp.json()["file_url"]
-            self.send_mail(
-                "Klaxon Alert: Site Updated", f"Get results here: {file_url}"
-            )
 
             # Captures the current version of the site in Wayback.
-            savepagenow.capture(site)
+            try:
+                new_archive_url = savepagenow.capture(site)
+            except savepagenow.exceptions.WaybackRuntimeError:
+                new_archive_url = f"New snapshot failed, please archive \
+                {site} manually at https://web.archive.org/"
+
+            self.send_mail(
+                "Klaxon Alert: Site Updated", f"Get results here: {file_url} \n \
+                New snapshot: {new_archive_url}\
+                "
+            )
 
     def main(self):
         """Gets the site and selector from the Add-On run, calls monitor"""
