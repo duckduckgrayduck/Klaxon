@@ -24,6 +24,7 @@ class Klaxon(AddOn):
         # Get the last successful entry & timestamp for that entry
         last_save = successful_saves[-1]
         timestamp = last_save.split('/')[1].split('h')[0].strip()
+        print(timestamp)
         # Generate the URL for the last successful save's raw HTML file
         last_save_url = f'https://web.archive.org/web/{timestamp}id_/{site}'
         # Now that we have the timestamp for the last successful wayback entry, we can pull the HTML
