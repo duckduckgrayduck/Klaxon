@@ -39,6 +39,7 @@ class Klaxon(AddOn):
         new_elements = soup2.select(selector)
         # If there are no differences between the current site and the last archived site, Add-On ends.
         if old_elements == new_elements:
+            self.set_message("No changes in page since last archive")
             sys.exit(0)
         else:
             # Generating a list of strings using prettify to pass to difflib
