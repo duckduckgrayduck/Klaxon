@@ -14,8 +14,24 @@ from documentcloud.addon import AddOn
 from documentcloud.toolbox import requests_retry_session
 from bs4 import BeautifulSoup
 
+
 class Klaxon(AddOn):
     """Add-On that will monitor a site for changes and alert you for updates"""
+
+    def check_first_seen(self, site):
+        """Checks to see if this site has ever been archived on Wayback"""
+        archive_test = f"https://archive.org/wayback/available?url={site}"
+        response = requests_retry_session(retries=8).get(archive_test)
+        resp_json = response.json()
+        if resp_json["archived_snapshots"] == {}:
+            savepagenow.capture(site)
+            self.send_mail(
+                "Klaxon Alert: New Site Archived",
+                f"The site you provided: {site} has never been archived \
+                using the Wayback Machine until now. \
+                We will alert you if changes are made during the next run.",
+            )
+            sys.exit(0)
 
     def get_elements(self, site, selector):
         """Given a URL and css selector, pulls the elements using BeautifulSoup"""
@@ -44,6 +60,7 @@ class Klaxon(AddOn):
 
     def monitor_with_selector(self, site, selector):
         """Monitors a particular site for changes and sends a diff via email"""
+        self.check_first_seen(site)
         archive_url = self.get_wayback_url(site)
 
         # Grab the elements for the archived page and the current site
