@@ -16,50 +16,57 @@ import savepagenow
 
 class Klaxon(AddOn):
     """Add-On that will monitor a site for changes and alert you for updates"""
-    def monitor_with_selector(self, site, selector):
+    
+    def get_elements(self, site, selector):
+        html = requests.get(site)
+        soup = BeautifulSoup(html.text, 'html.parser')
+        elements = soup.select(selector)
+        return elements
+
+    def get_wayback_url(self,site):
         # Get the full list of archive.org entries
         response = requests.get(f'http://web.archive.org/cdx/search/cdx?url={site}')
         # Filter only for the successful entries
-        successful_saves = []
-        for line in response.text.splitlines():
-            if ' 200 ' in line:
-                successful_saves.append(line)
+        successful_saves = [
+            line for line in response.text.splitlines()
+            if line.split()[4] == "200"
+        ] 
         # Get the last successful entry & timestamp for that entry
         last_save = successful_saves[-1]
-        r = re.search("\d\d\d\d\d\d\d\d\d\d\d\d\d\d", last_save)
+        r = re.search("\d{14}", last_save)
         timestamp = r.group()
         # Generate the URL for the last successful save's raw HTML file
-        last_save_url = f'https://web.archive.org/web/{timestamp}id_/{site}'
-        # Now that we have the timestamp for the last successful wayback entry, we can pull the HTML
-        last_save_html = requests.get(last_save_url)
-        # And pass it to BeautifulSoup to view only the css selectors we care about.
-        soup = BeautifulSoup(last_save_html.text, 'html.parser')
-        old_elements = soup.select(selector)
-        # Now going to pull the current version of the site & pull selectors using bsoup
-        current_html = requests.get(site)
-        soup2 = BeautifulSoup(current_html.text, 'html.parser')
-        new_elements = soup2.select(selector)
-        # If there are no differences between the current site and the last archived site, Add-On ends.
+        full_url = f'https://web.archive.org/web/{timestamp}id_/{site}'
+        return full_url
+
+    def monitor_with_selector(self, site, selector):
+        """ Monitors a particular site for changes and sends a diff via email """
+        archive_url = self.get_wayback_url(site)
+
+        # Grab the elements for the archived page and the current site
+        old_elements = self.get_elements(archive_url, selector)
+        new_elements = self.get_elements(site, selector)
+
         if old_elements == new_elements:
             self.set_message("No changes in page since last archive")
             sys.exit(0)
         else:
-            # Generating a list of strings using prettify to pass to difflib
-            old_tags = []
-            for x in old_elements:
-                old_tags.append(x.prettify()) 
-            # Generating a list of strings using prettify to pass to difflib 
-            new_tags = [] 
-            for y in new_elements:
-                new_tags.append(y.prettify())
+            # Generates a list of strings using prettify to pass to difflib
+            old_tags = [x.prettify() for x in old_elements]
+            new_tags = [y.prettify() for y in new_elements]
+    
             # Generates HTML view that shows diffs in a pretty format
             html_diff = dl.HtmlDiff().make_file(old_tags, new_tags, context=True)
-            
-            # Sends the diff as an alert to the user's email -- need to add HTML support to email for this to work correctly
-            # self.send_mail("Klaxon Alert: Site Updated", html_diff)
+            # Saves the view as a file
             Path('diff.html').write_text(html_diff)
+
+            # Uploads the file to S3, grabs the file, and emails it to the user. 
             self.upload_file(open("diff.html"))
-            # Captures the more recent version of the site in Wayback. 
+            resp = self.client.get(f"addon_runs/{self.id}/")
+            file_url = resp.json()["file_url"]
+            self.send_mail("Klaxon Alert: Site Updated", f"Get results here: {file_url}")
+    
+            # Captures the current version of the site in Wayback. 
             savepagenow.capture(site)
 
     def main(self):
