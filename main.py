@@ -3,7 +3,7 @@ Uses BeautifulSoup to pull CSS selectors and prettify,
 requests to pull content from archive.org and the webpage,
 difflib to compare the archive and the current page,
 uses re to pull the timestamp from the archive result,
-savepagenow to archive pages that are updated. test2
+savepagenow to archive pages that are updated.
 """
 import difflib
 import re
@@ -98,7 +98,7 @@ class Klaxon(AddOn):
                 manually at https://web.archive.org/"
 
             self.send_mail(
-                "Klaxon Alert: Site Updated", f"Get results here: {file_url} \n"
+                "Klaxon Alert: Site Updated", f"Get results here (you must be logged in!): {file_url} \n"
                 f"New snapshot: {new_archive_url}"
             )
 
