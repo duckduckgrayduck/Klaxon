@@ -53,9 +53,9 @@ class Klaxon(AddOn):
             # Sends the diff as an alert to the user's email -- need to add HTML support to email for this to work correctly
             # self.send_mail("Klaxon Alert: Site Updated", html_diff)
             Path('diff.html').write_text(html_diff)
-            self.upload_file('diff.html')
+            self.upload_file(open("diff.html"))
             # Captures the more recent version of the site in Wayback. 
-            savepagenow.capture(site)
+            # savepagenow.capture(site)
 
     def main(self):
         site = self.data.get("site")
