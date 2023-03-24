@@ -103,6 +103,10 @@ class Klaxon(AddOn):
             # self.send_mail("Klaxon Alert: Site Updated", html_diff)
             Path('diff.html').write_text(html_diff)
             self.upload_file(open("diff.html"))
+            resp = self.client.get(f"addon_runs/{self.id}/")
+            file_url = resp.json()["file_url"]
+            self.send_mail("Klaxon Alert: Site Updated", f"Get results here: {file_url}")
+
             # Captures the more recent version of the site in Wayback. 
             savepagenow.capture(site)
 
