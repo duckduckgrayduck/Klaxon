@@ -24,11 +24,12 @@ class Klaxon(AddOn):
         response = requests_retry_session(retries=8).get(archive_test)
         resp_json = response.json()
         if resp_json["archived_snapshots"] == {}:
-            savepagenow.capture(site)
+            first_seen_url = savepagenow.capture(site)
             self.send_mail(
                 "Klaxon Alert: New Site Archived",
-                f"The site you provided: {site} has never been archived \
+                f"{site} has never been archived \
                 using the Wayback Machine until now. \n \
+                The first snapshot is now available here: {first_seen_url} \n \
                 We will alert you if changes are made during the next run.",
             )
             sys.exit(0)
