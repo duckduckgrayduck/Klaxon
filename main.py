@@ -67,7 +67,7 @@ class Klaxon(AddOn):
             full_url = f"https://web.archive.org/web/{timestamp}id_/{site}"
             return full_url
         else:
-            timestamp = self.site_data[timestamp]
+            timestamp = self.site_data["timestamp"]
             print(timestamp)
             self.timestamp1 = timestamp
             full_url = f"https://web.archive.org/web/{timestamp}id_/{site}"
