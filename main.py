@@ -119,7 +119,7 @@ class Klaxon(AddOn):
                 sys.exit(0)
             self.send_mail(
                 "Klaxon Alert: Site Updated", f"Get results here (you must be logged in!): {file_url} \n"
-                f"New snapshot: {new_archive_url}" 
+                f"New snapshot: {new_archive_url} \n" 
                 f"Visual content wayback comparison: {changes_url}"
             )
 
