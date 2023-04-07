@@ -138,6 +138,7 @@ class Klaxon(AddOn):
         site = self.data.get("site")
         selector = self.data.get("selector")
         self.site_data = self.load_event_data()
+        print(self.site_data)
         if self.site_data is None:
             self.site_data = {}
         self.set_message("Checking the site for updates...")
