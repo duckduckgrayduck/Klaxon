@@ -112,7 +112,9 @@ class Klaxon(AddOn):
                 new_archive_url = f"New snapshot failed, please archive {site} \
                 manually at https://web.archive.org/"
                 changes_url = "New snapshot failed, so no comparison url was generated"
-        
+            except savepagenow.exceptions.CachedPage:
+                self.send_mail("Klaxon Alert: Site already cached, no changes")
+                sys.exit(0)
             self.send_mail(
                 "Klaxon Alert: Site Updated", f"Get results here (you must be logged in!): {file_url} \n"
                 f"New snapshot: {new_archive_url}" 
