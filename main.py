@@ -106,9 +106,9 @@ class Klaxon(AddOn):
             # Captures the current version of the site in Wayback.
             try:
                 new_archive_url = savepagenow.capture(site)
-                print(new_archive_url)
                 new_timestamp = self.get_timestamp(new_archive_url)
                 self.site_data["timestamp"] = new_timestamp
+                self.store_event_data(self.site_data)
                 old_timestamp = self.timestamp1
                 changes_url = self.get_changes_url(site, old_timestamp, new_timestamp)
                 # rare edge case where Wayback savepagenow returns the old archive URL
@@ -142,7 +142,6 @@ class Klaxon(AddOn):
         self.set_message("Checking the site for updates...")
         self.monitor_with_selector(site, selector)
         self.set_message("Detection complete")
-        self.store_event_data(self.site_data)
 
 if __name__ == "__main__":
     Klaxon().main()
