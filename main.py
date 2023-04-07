@@ -87,6 +87,7 @@ class Klaxon(AddOn):
 
         if old_elements == new_elements:
             self.set_message("No changes in page since last archive")
+            self.send_mail("Klaxon Alert: No changes", f"No changes in page {site} since last seen")
             sys.exit(0)
         else:
             # Generates a list of strings using prettify to pass to difflib
@@ -115,7 +116,7 @@ class Klaxon(AddOn):
                 manually at https://web.archive.org/"
                 changes_url = "New snapshot failed, so no comparison url was generated"
             except savepagenow.exceptions.CachedPage:
-                self.send_mail("Klaxon Alert: Site already cached, no changes")
+                self.send_mail("Klaxon Alert: Site cached too recently", f"No changes in {site} since last seen")
                 sys.exit(0)
             self.send_mail(
                 "Klaxon Alert: Site Updated", f"Get results here (you must be logged in!): {file_url} \n"
