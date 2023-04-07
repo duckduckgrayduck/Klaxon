@@ -38,7 +38,7 @@ class Klaxon(AddOn):
         res = re.search("\d{14}", url)
         if res is None:
             self.send_mail("Klaxon Runtime Error", "Regex failed to find a timestamp "
-            f"for url {site}. \n Please forward this email to info@documentcloud.org")
+            f"for url {url}. \n Please forward this email to info@documentcloud.org")
             sys.exit(1)
         return res.group()
 
