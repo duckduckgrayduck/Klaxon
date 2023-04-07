@@ -33,7 +33,7 @@ class Klaxon(AddOn):
                 "We will alert you if changes are made during the next run."
             )
             sys.exit(0)
-
+   
     def get_timestamp(self, url):
         res = re.search("\d{14}", url)
         if res is None:
@@ -70,7 +70,10 @@ class Klaxon(AddOn):
             timestamp = self.site_data[timestamp]
             full_url = f"https://web.archive.org/web/{timestamp}id_/{site}"
             return full_url
-
+        
+    def get_changes_url(self, site, timestamp1, timestamp2):
+        return f"https://web.archive.org/web/diff/{timestamp1}/{timestamp2}/{site}
+        
     def monitor_with_selector(self, site, selector):
         """Monitors a particular site for changes and sends a diff via email"""
         self.check_first_seen(site)
@@ -101,15 +104,19 @@ class Klaxon(AddOn):
             # Captures the current version of the site in Wayback.
             try:
                 new_archive_url = savepagenow.capture(site)
-                timestamp = self.get_timestamp(new_archive_url)
-                self.site_data["timestamp"] = timestamp
+                new_timestamp = self.get_timestamp(new_archive_url)
+                self.site_data["timestamp"] = new_timestamp
+                old_timestamp = self.get_timestamp(site)
+                changes_url = self.get_changes_url(site, old_timestamp, new_timestamp)
             except savepagenow.exceptions.WaybackRuntimeError:
                 new_archive_url = f"New snapshot failed, please archive {site} \
                 manually at https://web.archive.org/"
-
+                changes_url = "New snapshot failed, so no comparison url was generated"
+        
             self.send_mail(
                 "Klaxon Alert: Site Updated", f"Get results here (you must be logged in!): {file_url} \n"
-                f"New snapshot: {new_archive_url}"
+                f"New snapshot: {new_archive_url}" 
+                f"Visual content wayback comparison: {changes_url}"
             )
 
     def main(self):
