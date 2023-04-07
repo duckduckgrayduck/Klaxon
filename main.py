@@ -108,6 +108,7 @@ class Klaxon(AddOn):
             try:
                 new_archive_url = savepagenow.capture(site)
                 new_timestamp = self.get_timestamp(new_archive_url)
+                print(new_timestamp)
                 self.site_data["timestamp"] = new_timestamp
                 old_timestamp = self.timestamp1
                 changes_url = self.get_changes_url(site, old_timestamp, new_timestamp)
