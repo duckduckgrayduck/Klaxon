@@ -14,7 +14,6 @@ from documentcloud.addon import AddOn
 from documentcloud.toolbox import requests_retry_session
 from bs4 import BeautifulSoup
 
-
 class Klaxon(AddOn):
     """Add-On that will monitor a site for changes and alert you for updates"""
 
@@ -107,6 +106,7 @@ class Klaxon(AddOn):
             # Captures the current version of the site in Wayback.
             try:
                 new_archive_url = savepagenow.capture(site)
+                print(new_archive_url)
                 new_timestamp = self.get_timestamp(new_archive_url)
                 self.site_data["timestamp"] = new_timestamp
                 old_timestamp = self.timestamp1
