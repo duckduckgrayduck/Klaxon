@@ -34,7 +34,7 @@ class Klaxon(AddOn):
             )
             sys.exit(0)
 
-    def get_timestamp (url):
+    def get_timestamp(self, url):
         res = re.search("\d{14}", url)
         if res is None:
             self.send_mail("Klaxon Runtime Error", "Regex failed to find a timestamp "
