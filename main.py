@@ -108,10 +108,16 @@ class Klaxon(AddOn):
             try:
                 new_archive_url = savepagenow.capture(site)
                 new_timestamp = self.get_timestamp(new_archive_url)
-                print(new_archive_url)
                 self.site_data["timestamp"] = new_timestamp
                 old_timestamp = self.timestamp1
                 changes_url = self.get_changes_url(site, old_timestamp, new_timestamp)
+                # rare edge case where Wayback savepagenow returns the old archive URL
+                # usually when a site is archived in rapid succession
+                if new_timestamp == old_timestamp:
+                    self.send_mail(
+                    "Klaxon Alert: Site Updated", f"Get results here (you must be logged in!): {file_url} \n"
+                    f"The last snapshot of {site} was not captured because it was shortly after a recent archive \n"
+                    "Please manually archive this page on https://archive.org to see updates in Wayback changes if desired")
             except savepagenow.exceptions.WaybackRuntimeError:
                 new_archive_url = f"New snapshot failed, please archive {site} \
                 manually at https://web.archive.org/"
