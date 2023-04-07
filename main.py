@@ -63,11 +63,13 @@ class Klaxon(AddOn):
             # Get the last successful entry & timestamp for that entry
             last_save = successful_saves[-1]
             timestamp = self.get_timestamp(last_save)
+            self.timestamp1 = timestamp
             # Generate the URL for the last successful save's raw HTML file
             full_url = f"https://web.archive.org/web/{timestamp}id_/{site}"
             return full_url
         else:
             timestamp = self.site_data[timestamp]
+            self.timestamp1 = timestamp
             full_url = f"https://web.archive.org/web/{timestamp}id_/{site}"
             return full_url
         
@@ -106,7 +108,7 @@ class Klaxon(AddOn):
                 new_archive_url = savepagenow.capture(site)
                 new_timestamp = self.get_timestamp(new_archive_url)
                 self.site_data["timestamp"] = new_timestamp
-                old_timestamp = self.get_timestamp(site)
+                old_timestamp = self.timestamp1
                 changes_url = self.get_changes_url(site, old_timestamp, new_timestamp)
             except savepagenow.exceptions.WaybackRuntimeError:
                 new_archive_url = f"New snapshot failed, please archive {site} \
