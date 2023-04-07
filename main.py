@@ -34,6 +34,14 @@ class Klaxon(AddOn):
             )
             sys.exit(0)
 
+    def get_timestamp (url):
+        res = re.search("\d{14}", url)
+        if res is None:
+            self.send_mail("Klaxon Runtime Error", "Regex failed to find a timestamp "
+            f"for url {site}. \n Please forward this email to info@documentcloud.org")
+            sys.exit(1)
+        return res.group()
+
     def get_elements(self, site, selector):
         """Given a URL and css selector, pulls the elements using BeautifulSoup"""
         html = requests_retry_session(retries=8).get(site)
@@ -44,24 +52,24 @@ class Klaxon(AddOn):
     def get_wayback_url(self, site):
         """Given a site, returns the most recent wayback entry url containing original html"""
         # Get the full list of archive.org entries
-        response = requests_retry_session(retries=8).get(
+        if self.site_data == {}:
+            response = requests_retry_session(retries=8).get(
             f"http://web.archive.org/cdx/search/cdx?url={site}"
-        )
-        # Filter only for the successful entries
-        successful_saves = [
-            line for line in response.text.splitlines() if line.split()[4] == "200"
-        ]
-        # Get the last successful entry & timestamp for that entry
-        last_save = successful_saves[-1]
-        res = re.search("\d{14}", last_save)
-        if res is None:
-            self.send_mail("Klaxon Runtime Error", "Regex failed to find a timestamp "
-            f"for url {site}. \n Please forward this email to info@documentcloud.org")
-            sys.exit(1)
-        timestamp = res.group()
-        # Generate the URL for the last successful save's raw HTML file
-        full_url = f"https://web.archive.org/web/{timestamp}id_/{site}"
-        return full_url
+            )
+            # Filter only for the successful entries
+            successful_saves = [
+                line for line in response.text.splitlines() if line.split()[4] == "200"
+            ]
+            # Get the last successful entry & timestamp for that entry
+            last_save = successful_saves[-1]
+            timestamp = self.get_timestamp(last_save)
+            # Generate the URL for the last successful save's raw HTML file
+            full_url = f"https://web.archive.org/web/{timestamp}id_/{site}"
+            return full_url
+        else:
+            timestamp = self.site_data[timestamp]
+            full_url = f"https://web.archive.org/web/{timestamp}id_/{site}"
+            return full_url
 
     def monitor_with_selector(self, site, selector):
         """Monitors a particular site for changes and sends a diff via email"""
@@ -93,6 +101,8 @@ class Klaxon(AddOn):
             # Captures the current version of the site in Wayback.
             try:
                 new_archive_url = savepagenow.capture(site)
+                timestamp = self.get_timestamp(new_archive_url)
+                self.site_data["timestamp"] = timestamp
             except savepagenow.exceptions.WaybackRuntimeError:
                 new_archive_url = f"New snapshot failed, please archive {site} \
                 manually at https://web.archive.org/"
@@ -103,11 +113,16 @@ class Klaxon(AddOn):
             )
 
     def main(self):
-        """Gets the site and selector from the Add-On run, calls monitor"""
+        """Gets the site and selector from the Add-On run, checks  calls monitor"""
         site = self.data.get("site")
         selector = self.data.get("selector")
+        self.site_data = self.load_event_data()
+        if self.site_data is None:
+            self.site_data = {}
+        self.set_message("Checking the site for updates...")
         self.monitor_with_selector(site, selector)
-
+        self.set_message("Detection complete")
+        self.store_event_data(self.site_data)
 
 if __name__ == "__main__":
     Klaxon().main()
