@@ -72,7 +72,7 @@ class Klaxon(AddOn):
             return full_url
         
     def get_changes_url(self, site, timestamp1, timestamp2):
-        return f"https://web.archive.org/web/diff/{timestamp1}/{timestamp2}/{site}
+        return f"https://web.archive.org/web/diff/{timestamp1}/{timestamp2}/{site}"
         
     def monitor_with_selector(self, site, selector):
         """Monitors a particular site for changes and sends a diff via email"""
