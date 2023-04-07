@@ -118,6 +118,7 @@ class Klaxon(AddOn):
                     "Klaxon Alert: Site Updated", f"Get results here (you must be logged in!): {file_url} \n"
                     f"The last snapshot of {site} was not captured because it was shortly after a recent archive \n"
                     "Please manually archive this page on https://archive.org to see updates in Wayback changes if desired")
+                    sys.exit(0)
             except savepagenow.exceptions.WaybackRuntimeError:
                 new_archive_url = f"New snapshot failed, please archive {site} \
                 manually at https://web.archive.org/"
