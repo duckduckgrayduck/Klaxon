@@ -49,7 +49,7 @@ class Klaxon(AddOn):
         return elements
 
     def get_wayback_url(self, site):
-        """Given a site, returns the most recent wayback entry url containing original html"""
+        """Given a site, returns the most recent wayback url containing original html"""
         # Get the full list of archive.org entries
         if self.site_data == {}:
             response = requests_retry_session(retries=8).get(
