@@ -117,7 +117,7 @@ class Klaxon(AddOn):
                 if new_timestamp == old_timestamp:
                     self.send_mail(
                     "Klaxon Alert: Site Updated", f"Get results here (you must be logged in!): {file_url} \n"
-                    f"The last snapshot of {site} was not captured because it was shortly after a recent archive \n"
+                    f"The last snapshot of {site} was not captured because the page was archived too recently \n"
                     "Please manually archive this page on https://archive.org to see updates in Wayback changes if desired")
                     sys.exit(0)
             except savepagenow.exceptions.WaybackRuntimeError:
