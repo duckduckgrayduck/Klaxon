@@ -1,7 +1,7 @@
 title: Klaxon Site Monitor
 description: >- 
    Klaxon enables reporters and editors to monitor scores of sites and files on the web for newsworthy changes. 
-   Get email and Slack notifications when something changes. Provide an optional CSS selector to only monitor 
+   Get email notifications when something changes. Provide an optional CSS selector to only monitor 
    portions of a page you are interested in. 
 type: object
 properties:
