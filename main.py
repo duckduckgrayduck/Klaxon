@@ -55,7 +55,9 @@ class Klaxon(AddOn):
 
     def get_wayback_url(self, site):
         """Given a site, returns the most recent wayback url containing original html"""
-        # Get the full list of archive.org entries
+        # If this is the first time running the Add-On, gets all the wayback entries for the URL
+        # & pulls the most recent entry's timestamp. 
+        # Else gets the last seen timestamp from event data. 
         if self.site_data == {}:
             response = requests_retry_session(retries=8).get(
                 f"http://web.archive.org/cdx/search/cdx?url={site}"
@@ -71,6 +73,7 @@ class Klaxon(AddOn):
             # Generate the URL for the last successful save's raw HTML file
             full_url = f"https://web.archive.org/web/{timestamp}id_/{site}"
         else:
+            # Gets the last seen timestamp from event data, must be a scheduled Add-On run.
             timestamp = self.site_data["timestamp"]
             self.timestamp1 = timestamp
             full_url = f"https://web.archive.org/web/{timestamp}id_/{site}"
@@ -88,7 +91,8 @@ class Klaxon(AddOn):
         # Grab the elements for the archived page and the current site
         old_elements = self.get_elements(archive_url, selector)
         new_elements = self.get_elements(site, selector)
-
+        
+        # If there are no changes, you get a notification that no changes were made. 
         if old_elements == new_elements:
             self.set_message("No changes in page since last archive")
             self.send_mail(
@@ -119,7 +123,7 @@ class Klaxon(AddOn):
                 old_timestamp = self.timestamp1
                 changes_url = self.get_changes_url(site, old_timestamp, new_timestamp)
                 # rare edge case where Wayback savepagenow returns the old archive URL
-                # usually when a site is archived in rapid succession
+                # usually when a site is archived in rapid succession.
                 if new_timestamp == old_timestamp:
                     self.send_mail(
                         "Klaxon Alert: Site Updated",
@@ -131,6 +135,7 @@ class Klaxon(AddOn):
                     )
                     sys.exit(0)
             except savepagenow.exceptions.WaybackRuntimeError:
+                # If savepagenow fails to capture the URL for some reason. 
                 new_archive_url = f"New snapshot failed, please archive {site} \
                 manually at https://web.archive.org/"
                 changes_url = "New snapshot failed, so no comparison url was generated"
@@ -149,8 +154,10 @@ class Klaxon(AddOn):
 
     def main(self):
         """Gets the site and selector from the Add-On run, checks  calls monitor"""
+        # Gets the site and selector from the front-end yaml
         site = self.data.get("site")
         selector = self.data.get("selector")
+        # Loads event data, only will be populated if a scheduled Add-On run. 
         self.site_data = self.load_event_data()
         if self.site_data is None:
             self.site_data = {}
