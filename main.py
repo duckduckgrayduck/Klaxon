@@ -54,10 +54,10 @@ class Klaxon(AddOn):
         return elements
 
     def get_wayback_url(self, site):
-        """Given a site, returns the most recent wayback url containing original html"""
-        # If this is the first time running the Add-On, gets all the wayback entries for the URL
-        # & pulls the most recent entry's timestamp. 
-        # Else gets the last seen timestamp from event data. 
+        """Given a site, returns the most recent wayback url containing original html
+           If this is the first time running the Add-On, gets all the wayback entries for the URL
+           & pulls the most recent entry's timestamp. Else gets the last timestamp from event data. 
+        """
         if self.site_data == {}:
             response = requests_retry_session(retries=8).get(
                 f"http://web.archive.org/cdx/search/cdx?url={site}"
