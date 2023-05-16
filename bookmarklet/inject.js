@@ -1,7 +1,7 @@
 (function() {
-  var appRoot = "https://the-marshall-project-klaxon.herokuapp.com/";
-  var editorURL = "https://the-marshall-project-klaxon.herokuapp.com/embed/iframe";
-  var postMessageDomain = "https://the-marshall-project-klaxon.herokuapp.com/";
+  var appRoot = "https://documentcloud-klaxon.s3.amazonaws.com/klaxon.html";
+  var editorURL = "https://documentcloud-klaxon.s3.amazonaws.com/klaxon.html"
+  var postMessageDomain = "https://documentcloud-klaxon.s3.amazonaws.com/klaxon.html";
 
   var currentURL = window.location.href;
   if (currentURL.indexOf(appRoot) >= 0) {
@@ -59,7 +59,7 @@
 
   var src = editorURL + "?url=" + encodeURIComponent(getCanonicalURL());
   var iframe = document.createElement('iframe');
-  iframe.setAttribute('src', src);
+  // iframe.setAttribute('src', src);
   iframe.setAttribute('id', 'klaxon-bookmarklet-iframe');
   iframe.setAttribute('frameborder', 0);
   iframe.style.top = '0px';
