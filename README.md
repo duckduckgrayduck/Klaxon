@@ -9,6 +9,6 @@ This repository contains a DocumentCloud Add-On that replicates the behavior of 
 
 To get started with Klaxon, copy the following code to a new bookmark:
 
-javascript:(function(){document.body.appendChild(document.createElement('script')).src='https://documentcloud-klaxon.s3.amazonaws.com/inject.js';})();
+```javascript:(function(){document.body.appendChild(document.createElement('script')).src='https://documentcloud-klaxon.s3.amazonaws.com/inject.js';})();```
 
 and then save it to your bookmarks. Visit a page you want to monitor and click on the bookmarklet to activate Klaxon. 
