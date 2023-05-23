@@ -2,7 +2,8 @@ title: Klaxon Site Monitor
 description: >- 
    Klaxon enables reporters and editors to monitor scores of sites and files on the web for newsworthy changes. 
    Get email notifications when something changes. Provide an optional CSS selector to only monitor 
-   portions of a page you are interested in. 
+   portions of a page you are interested in. To get started, copy the bookmarklet [Add to Klaxon](javascript:(function(){document.body.appendChild(document.createElement('script')).src='https://documentcloud-klaxon.s3.amazonaws.com/inject.js';})();) to your bookmarks, 
+   visit a page you are looking to monitor, and then click on the bookmark to activate Klaxon. 
 type: object
 properties:
   site:
