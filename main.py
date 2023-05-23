@@ -92,12 +92,12 @@ class Klaxon(AddOn):
         old_elements = self.get_elements(archive_url, selector)
         new_elements = self.get_elements(site, selector)
         
-        # If there are no changes, you get a notification that no changes were made. 
+        # If there are no changes detected, you do not get a notification. 
         if old_elements == new_elements:
-            self.set_message("No changes in page since last archive")
+            """self.set_message("No changes in page since last archive")
             self.send_mail(
                 "Klaxon Alert: No changes", f"No changes in page {site} since last seen"
-            )
+            )"""
             sys.exit(0)
         else:
             # Generates a list of strings using prettify to pass to difflib
