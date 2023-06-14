@@ -125,25 +125,27 @@ class Klaxon(AddOn):
                 # rare edge case where Wayback savepagenow returns the old archive URL
                 # usually when a site is archived in rapid succession.
                 if new_timestamp == old_timestamp:
-                    self.send_mail(
+                    """self.send_mail(
                         "Klaxon Alert: Site Updated",
                         f"Get results here (you must be logged in!): {file_url} \n"
                         f"The last snapshot of {site} was not captured because the page"
                         " was archived too recently \n"
                         "Please manually archive this page on https://archive.org" 
                         " to see updates in Wayback changes if desired",
-                    )
+                    )"""
                     sys.exit(0)
             except savepagenow.exceptions.WaybackRuntimeError:
                 # If savepagenow fails to capture the URL for some reason. 
-                new_archive_url = f"New snapshot failed, please archive {site} \
+                """new_archive_url = f"New snapshot failed, please archive {site} \
                 manually at https://web.archive.org/"
                 changes_url = "New snapshot failed, so no comparison url was generated"
+                """
+                sys.exit(0)
             except savepagenow.exceptions.CachedPage:
-                self.send_mail(
+                """self.send_mail(
                     "Klaxon Alert: Site cached too recently",
                     f"No changes in {site} since last seen",
-                )
+                )"""
                 sys.exit(0)
             self.send_mail(
                 "Klaxon Alert: Site Updated",
