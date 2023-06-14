@@ -149,7 +149,7 @@ class Klaxon(AddOn):
                 )"""
                 sys.exit(0)
             self.send_mail(
-                f"Klaxon Alert: {urlparse(site).netloc} Updated",
+                f"Klaxon Alert: {site} Updated",
                 f"Get results here (you must be logged in!): {file_url} \n"
                 f"New snapshot: {new_archive_url} \n"
                 f"Visual content wayback comparison: {changes_url}",
