@@ -24,7 +24,7 @@ class Klaxon(AddOn):
         archive_test = f"https://archive.org/wayback/available?url={site}"
         response = requests_retry_session(retries=8).get(archive_test)
         resp_json = response.json()
-        if resp_json["archived_snapshots"] == {}:
+        if resp_json["archived_snapshots"] == {} and self.site_data=={}:
             first_seen_url = savepagenow.capture(site)
             self.send_mail(
                 "Klaxon Alert: New Site Archived",
