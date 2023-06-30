@@ -88,8 +88,8 @@ class Klaxon(AddOn):
     def monitor_with_selector(self, site, selector):
         """Monitors a particular site for changes and sends a diff via email"""
         #Accesses the workflow secrets to run Wayback save's with authentication
-        access_key = os.environ["KEY"]
-        secret = os.environ["TOKEN"]
+        os.environ['access_key'] = os.environ["KEY"]
+        os.environ['secret'] = os.environ["TOKEN"]
         
         self.check_first_seen(site)
         archive_url = self.get_wayback_url(site)
