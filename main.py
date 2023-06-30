@@ -6,6 +6,7 @@ uses re to pull the timestamp from the archive result,
 savepagenow to archive pages that are updated.
 """
 import difflib
+import os
 import re
 import sys
 from pathlib import Path
@@ -86,6 +87,10 @@ class Klaxon(AddOn):
 
     def monitor_with_selector(self, site, selector):
         """Monitors a particular site for changes and sends a diff via email"""
+        #Accesses the workflow secrets to run Wayback save's with authentication
+        access_key = os.environ["KEY"]
+        secret = os.environ["TOKEN"]
+        
         self.check_first_seen(site)
         archive_url = self.get_wayback_url(site)
 
