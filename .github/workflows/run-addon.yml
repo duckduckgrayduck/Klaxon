@@ -8,5 +8,5 @@ jobs:
     with: 
       timeout: 15
     secrets: 
-     token: ${{ secrets.SECRET }}
-     key: ${{ secrets.ACCESS_KEY }}
+     token: ${{ secrets.SAVEPAGENOW_SECRET_KEY }}
+     key: ${{ secrets.SAVEPAGENOW_ACCESS_KEY }}
