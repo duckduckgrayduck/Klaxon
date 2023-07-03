@@ -9,6 +9,7 @@ import difflib
 import os
 import re
 import sys
+import requests
 from pathlib import Path
 import savepagenow
 from documentcloud.addon import AddOn
@@ -23,7 +24,11 @@ class Klaxon(AddOn):
         """Checks to see if this site has ever been archived on Wayback"""
         archive_test = f"https://archive.org/wayback/available?url={site}"
         response = requests_retry_session(retries=8).get(archive_test)
-        resp_json = response.json()
+        try:
+            resp_json = response.json()
+        except requests.exceptions.JSONDecodeError as j:
+            print(j)
+            sys.exit(0)
         if resp_json["archived_snapshots"] == {} and self.site_data == {}:
             first_seen_url = savepagenow.capture(site, authenticate=True)
             subject = "Klaxon Alert: New Site Archived"
