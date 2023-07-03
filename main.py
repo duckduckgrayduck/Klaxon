@@ -13,7 +13,6 @@ from pathlib import Path
 import savepagenow
 from documentcloud.addon import AddOn
 from documentcloud.toolbox import requests_retry_session
-from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
 
@@ -25,7 +24,7 @@ class Klaxon(AddOn):
         archive_test = f"https://archive.org/wayback/available?url={site}"
         response = requests_retry_session(retries=8).get(archive_test)
         resp_json = response.json()
-        if resp_json["archived_snapshots"] == {} and self.site_data=={}:
+        if resp_json["archived_snapshots"] == {} and self.site_data == {}:
             first_seen_url = savepagenow.capture(site, authenticate=True)
             subject = "Klaxon Alert: New Site Archived"
             message = (
@@ -34,9 +33,9 @@ class Klaxon(AddOn):
                 f"The first snapshot is now available here: {first_seen_url} \n"
                 "We will alert you if changes are made during the next run."
             )
-            self.send_notification(subject,message)
+            self.send_notification(subject, message)
             sys.exit(0)
-    
+
     def send_notification(self, subject, message):
         """Send notifications via slack and email"""
         self.send_mail(subject, message)
@@ -66,8 +65,8 @@ class Klaxon(AddOn):
 
     def get_wayback_url(self, site):
         """Given a site, returns the most recent wayback url containing original html
-           If this is the first time running the Add-On, gets all the wayback entries for the URL
-           & pulls the most recent entry's timestamp. Else gets the last timestamp from event data. 
+        If this is the first time running the Add-On, gets all the wayback entries for the URL
+        & pulls the most recent entry's timestamp. Else gets the last timestamp from event data.
         """
         if self.site_data == {}:
             response = requests_retry_session(retries=8).get(
@@ -96,23 +95,19 @@ class Klaxon(AddOn):
 
     def monitor_with_selector(self, site, selector):
         """Monitors a particular site for changes and sends a diff via email"""
-        #Accesses the workflow secrets to run Wayback save's with authentication
-        os.environ['SAVEPAGENOW_ACCESS_KEY'] = os.environ["KEY"]
-        os.environ['SAVEPAGENOW_SECRET_KEY'] = os.environ["TOKEN"]
-        
+        # Accesses the workflow secrets to run Wayback save's with authentication
+        os.environ["SAVEPAGENOW_ACCESS_KEY"] = os.environ["KEY"]
+        os.environ["SAVEPAGENOW_SECRET_KEY"] = os.environ["TOKEN"]
+
         self.check_first_seen(site)
         archive_url = self.get_wayback_url(site)
 
         # Grab the elements for the archived page and the current site
         old_elements = self.get_elements(archive_url, selector)
         new_elements = self.get_elements(site, selector)
-        
-        # If there are no changes detected, you do not get a notification. 
+
+        # If there are no changes detected, you do not get a notification.
         if old_elements == new_elements:
-            """self.set_message("No changes in page since last archive")
-            self.send_mail(
-                "Klaxon Alert: No changes", f"No changes in page {site} since last seen"
-            )"""
             sys.exit(0)
         else:
             # Generates a list of strings using prettify to pass to difflib
@@ -140,28 +135,11 @@ class Klaxon(AddOn):
                 # rare edge case where Wayback savepagenow returns the old archive URL
                 # usually when a site is archived in rapid succession.
                 if new_timestamp == old_timestamp:
-                    """self.send_mail(
-                        "Klaxon Alert: Site Updated",
-                        f"Get results here (you must be logged in!): {file_url} \n"
-                        f"The last snapshot of {site} was not captured because the page"
-                        " was archived too recently \n"
-                        "Please manually archive this page on https://archive.org" 
-                        " to see updates in Wayback changes if desired",
-                    )"""
                     sys.exit(0)
             except savepagenow.exceptions.WaybackRuntimeError:
-                # If savepagenow fails to capture the URL for some reason. 
-                """new_archive_url = f"New snapshot failed, please archive {site} \
-                manually at https://web.archive.org/"
-                changes_url = "New snapshot failed, so no comparison url was generated"
-                """
-                sys.exit(0)
+                sys.exit(1)
             except savepagenow.exceptions.CachedPage:
-                """self.send_mail(
-                    "Klaxon Alert: Site cached too recently",
-                    f"No changes in {site} since last seen",
-                )"""
-                sys.exit(0)
+                sys.exit(1)
             self.send_notification(
                 f"Klaxon Alert: {site} Updated",
                 f"Get results here (you must be logged in!): {file_url} \n"
@@ -174,7 +152,7 @@ class Klaxon(AddOn):
         # Gets the site and selector from the front-end yaml
         site = self.data.get("site")
         selector = self.data.get("selector")
-        # Loads event data, only will be populated if a scheduled Add-On run. 
+        # Loads event data, only will be populated if a scheduled Add-On run.
         self.site_data = self.load_event_data()
         if self.site_data is None:
             self.site_data = {}
