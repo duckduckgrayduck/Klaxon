@@ -123,7 +123,6 @@ class Klaxon(AddOn):
             # Captures the current version of the site in Wayback.
             try:
                 new_archive_url = savepagenow.capture(site, authenticate=True)
-                print(new_archive_url) #Debugging
                 new_timestamp = self.get_timestamp(new_archive_url)
                 self.site_data["timestamp"] = new_timestamp
                 self.store_event_data(self.site_data)
