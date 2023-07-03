@@ -27,14 +27,21 @@ class Klaxon(AddOn):
         resp_json = response.json()
         if resp_json["archived_snapshots"] == {} and self.site_data=={}:
             first_seen_url = savepagenow.capture(site, authenticate=True)
-            self.send_mail(
-                "Klaxon Alert: New Site Archived",
-                f"{site} has never been archived "
+            subject = "Klaxon Alert: New Site Archived"
+            message = f"{site} has never been archived "
                 "using the Wayback Machine until now.\n"
                 f"The first snapshot is now available here: {first_seen_url} \n"
-                "We will alert you if changes are made during the next run.",
-            )
+                "We will alert you if changes are made during the next run."
+            self.send_notification(subject,message)
             sys.exit(0)
+    
+    def send_notification(self, subject, message):
+        """Send notifications via slack and email"""
+        self.send_mail(subject, message)
+        if self.data.get("slack_webhook"):
+            requests_retry_session().post(
+                self.data.get("slack_webhook"), json={"text": f"{subject}\n\n{message}"}
+            )
 
     def get_timestamp(self, url):
         """Gets a timestamp from an archive.org URL"""
@@ -153,7 +160,7 @@ class Klaxon(AddOn):
                     f"No changes in {site} since last seen",
                 )"""
                 sys.exit(0)
-            self.send_mail(
+            self.send_notification(
                 f"Klaxon Alert: {site} Updated",
                 f"Get results here (you must be logged in!): {file_url} \n"
                 f"New snapshot: {new_archive_url} \n"
