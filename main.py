@@ -28,10 +28,12 @@ class Klaxon(AddOn):
         if resp_json["archived_snapshots"] == {} and self.site_data=={}:
             first_seen_url = savepagenow.capture(site, authenticate=True)
             subject = "Klaxon Alert: New Site Archived"
-            message = f"{site} has never been archived "
+            message = (
+                f"{site} has never been archived "
                 "using the Wayback Machine until now.\n"
                 f"The first snapshot is now available here: {first_seen_url} \n"
                 "We will alert you if changes are made during the next run."
+            )
             self.send_notification(subject,message)
             sys.exit(0)
     
