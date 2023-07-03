@@ -136,9 +136,11 @@ class Klaxon(AddOn):
                 # usually when a site is archived in rapid succession.
                 if new_timestamp == old_timestamp:
                     sys.exit(0)
-            except savepagenow.exceptions.WaybackRuntimeError:
+            except savepagenow.exceptions.WaybackRuntimeError as e:
+                print(e)
                 sys.exit(1)
-            except savepagenow.exceptions.CachedPage:
+            except savepagenow.exceptions.CachedPage as c:
+                print(c)
                 sys.exit(1)
             self.send_notification(
                 f"Klaxon Alert: {site} Updated",
