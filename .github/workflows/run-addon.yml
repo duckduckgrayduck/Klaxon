@@ -7,3 +7,6 @@ jobs:
     uses: MuckRock/documentcloud-addon-workflows/.github/workflows/run-addon.yml@v1
     with: 
       timeout: 15
+    secrets: 
+     token: ${{ secrets.SAVEPAGENOW_SECRET_KEY }}
+     key: ${{ secrets.SAVEPAGENOW_ACCESS_KEY }}

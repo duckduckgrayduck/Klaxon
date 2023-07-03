@@ -6,6 +6,7 @@ uses re to pull the timestamp from the archive result,
 savepagenow to archive pages that are updated.
 """
 import difflib
+import os
 import re
 import sys
 from pathlib import Path
@@ -25,7 +26,7 @@ class Klaxon(AddOn):
         response = requests_retry_session(retries=8).get(archive_test)
         resp_json = response.json()
         if resp_json["archived_snapshots"] == {} and self.site_data=={}:
-            first_seen_url = savepagenow.capture(site)
+            first_seen_url = savepagenow.capture(site, authenticate=True)
             self.send_mail(
                 "Klaxon Alert: New Site Archived",
                 f"{site} has never been archived "
@@ -86,6 +87,10 @@ class Klaxon(AddOn):
 
     def monitor_with_selector(self, site, selector):
         """Monitors a particular site for changes and sends a diff via email"""
+        #Accesses the workflow secrets to run Wayback save's with authentication
+        os.environ['SAVEPAGENOW_ACCESS_KEY'] = os.environ["KEY"]
+        os.environ['SAVEPAGENOW_SECRET_KEY'] = os.environ["TOKEN"]
+        
         self.check_first_seen(site)
         archive_url = self.get_wayback_url(site)
 
@@ -117,7 +122,8 @@ class Klaxon(AddOn):
 
             # Captures the current version of the site in Wayback.
             try:
-                new_archive_url = savepagenow.capture(site)
+                new_archive_url = savepagenow.capture(site, authenticate=True)
+                print(new_archive_url) #Debugging
                 new_timestamp = self.get_timestamp(new_archive_url)
                 self.site_data["timestamp"] = new_timestamp
                 self.store_event_data(self.site_data)
