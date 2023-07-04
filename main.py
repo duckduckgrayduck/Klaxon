@@ -23,7 +23,8 @@ class Klaxon(AddOn):
     def check_first_seen(self, site):
         """Checks to see if this site has ever been archived on Wayback"""
         archive_test = f"https://archive.org/wayback/available?url={site}"
-        response = requests_retry_session(retries=8).get(archive_test)
+        headers = {'User-Agent': 'Klaxon https://github.com/MuckRock/Klaxon'}
+        response = requests_retry_session(retries=10).get(archive_test, headers=headers)
         try:
             resp_json = response.json()
         except requests.exceptions.JSONDecodeError as j:
@@ -63,7 +64,8 @@ class Klaxon(AddOn):
 
     def get_elements(self, site, selector):
         """Given a URL and css selector, pulls the elements using BeautifulSoup"""
-        html = requests_retry_session(retries=8).get(site)
+        headers = {'User-Agent': 'Klaxon https://github.com/MuckRock/Klaxon'}
+        html = requests_retry_session(retries=10).get(site, headers=headers)
         soup = BeautifulSoup(html.text, "html.parser")
         elements = soup.select(selector)
         return elements
@@ -74,8 +76,10 @@ class Klaxon(AddOn):
         & pulls the most recent entry's timestamp. Else gets the last timestamp from event data.
         """
         if self.site_data == {}:
-            response = requests_retry_session(retries=8).get(
-                f"http://web.archive.org/cdx/search/cdx?url={site}"
+            headers = {'User-Agent': 'Klaxon https://github.com/MuckRock/Klaxon'}
+            response = requests_retry_session(retries=10).get(
+                f"http://web.archive.org/cdx/search/cdx?url={site}", 
+                headers=headers
             )
             # Filter only for the successful entries
             successful_saves = [
