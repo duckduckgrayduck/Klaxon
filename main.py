@@ -28,7 +28,8 @@ class Klaxon(AddOn):
         try:
             resp_json = response.json()
         except requests.exceptions.JSONDecodeError as j:
-            print(j)
+            print(site)
+            print("JSON DECODE ERROR")
             sys.exit(0)
         if resp_json["archived_snapshots"] == {} and self.site_data == {}:
             first_seen_url = savepagenow.capture(site, authenticate=True)
@@ -147,9 +148,11 @@ class Klaxon(AddOn):
                     sys.exit(0)
             except savepagenow.exceptions.WaybackRuntimeError as e:
                 print(e)
+                print(site)
                 sys.exit(1)
             except savepagenow.exceptions.CachedPage as c:
                 print(c)
+                print(site)
                 sys.exit(1)
             self.send_notification(
                 f"Klaxon Alert: {site} Updated",
