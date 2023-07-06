@@ -28,8 +28,6 @@ class Klaxon(AddOn):
         try:
             resp_json = response.json()
         except requests.exceptions.JSONDecodeError as j:
-            print(site)
-            print("JSON DECODE ERROR")
             sys.exit(0)
         if resp_json["archived_snapshots"] == {} and self.site_data == {}:
             first_seen_url = savepagenow.capture(site, authenticate=True)
@@ -147,13 +145,9 @@ class Klaxon(AddOn):
                 if new_timestamp == old_timestamp:
                     sys.exit(0)
             except savepagenow.exceptions.WaybackRuntimeError as e:
-                print(e)
-                print(site)
-                sys.exit(1)
+                sys.exit(0)
             except savepagenow.exceptions.CachedPage as c:
-                print(c)
-                print(site)
-                sys.exit(1)
+                sys.exit(0)
             self.send_notification(
                 f"Klaxon Alert: {site} Updated",
                 f"Get results here (you must be logged in!): {file_url} \n"
