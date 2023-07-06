@@ -9,6 +9,7 @@ import difflib
 import os
 import re
 import sys
+import requests
 from pathlib import Path
 import savepagenow
 from documentcloud.addon import AddOn
@@ -22,8 +23,12 @@ class Klaxon(AddOn):
     def check_first_seen(self, site):
         """Checks to see if this site has ever been archived on Wayback"""
         archive_test = f"https://archive.org/wayback/available?url={site}"
-        response = requests_retry_session(retries=8).get(archive_test)
-        resp_json = response.json()
+        headers = {'User-Agent': 'Klaxon https://github.com/MuckRock/Klaxon'}
+        response = requests_retry_session(retries=10).get(archive_test, headers=headers)
+        try:
+            resp_json = response.json()
+        except requests.exceptions.JSONDecodeError as j:
+            sys.exit(0)
         if resp_json["archived_snapshots"] == {} and self.site_data == {}:
             first_seen_url = savepagenow.capture(site, authenticate=True)
             subject = "Klaxon Alert: New Site Archived"
@@ -58,7 +63,8 @@ class Klaxon(AddOn):
 
     def get_elements(self, site, selector):
         """Given a URL and css selector, pulls the elements using BeautifulSoup"""
-        html = requests_retry_session(retries=8).get(site)
+        headers = {'User-Agent': 'Klaxon https://github.com/MuckRock/Klaxon'}
+        html = requests_retry_session(retries=10).get(site, headers=headers)
         soup = BeautifulSoup(html.text, "html.parser")
         elements = soup.select(selector)
         return elements
@@ -69,8 +75,10 @@ class Klaxon(AddOn):
         & pulls the most recent entry's timestamp. Else gets the last timestamp from event data.
         """
         if self.site_data == {}:
-            response = requests_retry_session(retries=8).get(
-                f"http://web.archive.org/cdx/search/cdx?url={site}"
+            headers = {'User-Agent': 'Klaxon https://github.com/MuckRock/Klaxon'}
+            response = requests_retry_session(retries=10).get(
+                f"http://web.archive.org/cdx/search/cdx?url={site}", 
+                headers=headers
             )
             # Filter only for the successful entries
             successful_saves = [
@@ -136,10 +144,10 @@ class Klaxon(AddOn):
                 # usually when a site is archived in rapid succession.
                 if new_timestamp == old_timestamp:
                     sys.exit(0)
-            except savepagenow.exceptions.WaybackRuntimeError:
-                sys.exit(1)
-            except savepagenow.exceptions.CachedPage:
-                sys.exit(1)
+            except savepagenow.exceptions.WaybackRuntimeError as e:
+                sys.exit(0)
+            except savepagenow.exceptions.CachedPage as c:
+                sys.exit(0)
             self.send_notification(
                 f"Klaxon Alert: {site} Updated",
                 f"Get results here (you must be logged in!): {file_url} \n"
