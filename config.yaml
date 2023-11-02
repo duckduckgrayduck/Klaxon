@@ -6,6 +6,7 @@ description: >-
    visit a page you are looking to monitor, and then click on the bookmark to activate Klaxon. 
 
    [1]: javascript:(function(){document.body.appendChild(document.createElement('script')).src='https://documentcloud-klaxon.s3.amazonaws.com/inject.js';})();
+instructions: ''
 type: object
 properties:
   site:
