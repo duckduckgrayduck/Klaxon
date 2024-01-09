@@ -42,6 +42,10 @@ class Klaxon(AddOn):
                 "We will alert you if changes are made during the next run."
             )
             self.send_notification(subject, message)
+            timestamp = self.get_timestamp(first_seen_url)
+            self.site_data["timestamp"] = timestamp
+            print(self.site_data)
+            self.store_event_data(self.site_data)
             sys.exit(0)
 
     def send_notification(self, subject, message):
