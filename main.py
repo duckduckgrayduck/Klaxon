@@ -162,6 +162,7 @@ class Klaxon(AddOn):
         """Gets the site and selector from the Add-On run, checks  calls monitor"""
         # Gets the site and selector from the front-end yaml
         site = self.data.get("site")
+        print(site)
         selector = self.data.get("selector")
         # Loads event data, only will be populated if a scheduled Add-On run.
         self.site_data = self.load_event_data()
