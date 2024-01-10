@@ -23,15 +23,12 @@ class Klaxon(AddOn):
     def check_first_seen(self, site):
         """Checks to see if this site has ever been archived on Wayback"""
         archive_test = f"https://archive.org/wayback/available?url={site}"
-        print(archive_test)
         headers = {'User-Agent': 'Klaxon https://github.com/MuckRock/Klaxon'}
         response = requests_retry_session(retries=10).get(archive_test, headers=headers)
-        print(response)
         try:
             resp_json = response.json()
         except requests.exceptions.JSONDecodeError as j:
             sys.exit(0)
-        print(resp_json)
         if resp_json["archived_snapshots"] == {} and self.site_data == {}:
             first_seen_url = savepagenow.capture(site, authenticate=True)
             subject = "Klaxon Alert: New Site Archived"
@@ -44,13 +41,11 @@ class Klaxon(AddOn):
             self.send_notification(subject, message)
             timestamp = self.get_timestamp(first_seen_url)
             self.site_data["timestamp"] = timestamp
-            print(self.site_data)
             self.store_event_data(self.site_data)
             sys.exit(0)
         if resp_json["archived_snapshots"] != {} and self.site_data == {}:
             self.site_data["timestamp"] = resp_json["archived_snapshots"]["closest"]["timestamp"]
             self.store_event_data(self.site_data)
-            print(self.site_data)
 
     def send_notification(self, subject, message):
         """Send notifications via slack and email"""
@@ -170,11 +165,9 @@ class Klaxon(AddOn):
         """Gets the site and selector from the Add-On run, checks  calls monitor"""
         # Gets the site and selector from the front-end yaml
         site = self.data.get("site")
-        print(site)
         selector = self.data.get("selector")
         # Loads event data, only will be populated if a scheduled Add-On run.
         self.site_data = self.load_event_data()
-        print(self.site_data)
         if self.site_data is None:
             self.site_data = {}
         self.set_message("Checking the site for updates...")
