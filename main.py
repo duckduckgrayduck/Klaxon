@@ -9,8 +9,8 @@ import difflib
 import os
 import re
 import sys
-import requests
 from pathlib import Path
+import requests
 import savepagenow
 from documentcloud.addon import AddOn
 from documentcloud.toolbox import requests_retry_session
@@ -27,7 +27,7 @@ class Klaxon(AddOn):
         response = requests_retry_session(retries=10).get(archive_test, headers=headers)
         try:
             resp_json = response.json()
-        except requests.exceptions.JSONDecodeError as j:
+        except requests.exceptions.JSONDecodeError:
             sys.exit(0)
         if resp_json["archived_snapshots"] == {} and self.site_data == {}:
             first_seen_url = savepagenow.capture(site, authenticate=True)
@@ -57,7 +57,7 @@ class Klaxon(AddOn):
 
     def get_timestamp(self, url):
         """Gets a timestamp from an archive.org URL"""
-        res = re.search("\d{14}", url)
+        res = re.search(r"\d{14}", url)
         if res is None:
             self.send_mail(
                 "Klaxon Runtime Error",
@@ -72,7 +72,10 @@ class Klaxon(AddOn):
         headers = {'User-Agent': 'Klaxon https://github.com/MuckRock/Klaxon'}
         html = requests_retry_session(retries=10).get(site, headers=headers)
         soup = BeautifulSoup(html.text, "html.parser")
-        elements = soup.select(selector)
+        try:
+            elements = soup.select(selector)
+        except ValueError as exc:
+            raise ValueError(f"Invalid CSS selector used: {selector} on site {site}") from exc
         return elements
 
     def get_wayback_url(self, site):
@@ -93,12 +96,14 @@ class Klaxon(AddOn):
             # Get the last successful entry & timestamp for that entry
             last_save = successful_saves[-1]
             timestamp = self.get_timestamp(last_save)
+            #pylint:disable = attribute-defined-outside-init
             self.timestamp1 = timestamp
             # Generate the URL for the last successful save's raw HTML file
             full_url = f"https://web.archive.org/web/{timestamp}id_/{site}"
         else:
             # Gets the last seen timestamp from event data, must be a scheduled Add-On run.
             timestamp = self.site_data["timestamp"]
+             #pylint:disable = attribute-defined-outside-init
             self.timestamp1 = timestamp
             full_url = f"https://web.archive.org/web/{timestamp}id_/{site}"
         return full_url
@@ -119,6 +124,14 @@ class Klaxon(AddOn):
         # Grab the elements for the archived page and the current site
         old_elements = self.get_elements(archive_url, selector)
         new_elements = self.get_elements(site, selector)
+        filter_selector = self.data.get("filter_selector")
+        if filter_selector is not None:
+            try:
+                _ = self.get_elements(site, filter_selector)
+            except ValueError as e:
+                raise ValueError(f"Invalid CSS selector for filter_selector: {filter_selector}") from e #pylint:disable=line-too-long
+            old_elements = [el for el in old_elements if not el.select_one(filter_selector)]
+            new_elements = [el for el in new_elements if not el.select_one(filter_selector)]
 
         # If there are no changes detected, you do not get a notification.
         if old_elements == new_elements:
@@ -131,10 +144,11 @@ class Klaxon(AddOn):
             # Generates HTML view that shows diffs in a pretty format
             html_diff = difflib.HtmlDiff().make_file(old_tags, new_tags, context=True)
             # Saves the view as a file
-            Path("diff.html").write_text(html_diff)
+            Path("diff.html").write_text(html_diff, encoding="utf-8")
 
             # Uploads the file to S3, grabs the file, and emails it to the user.
-            self.upload_file(open("diff.html"))
+            with open("diff.html", encoding="utf-8") as file:
+                self.upload_file(file)
             resp = self.client.get(f"addon_runs/{self.id}/")
             file_url = resp.json()["file_url"]
 
@@ -150,9 +164,9 @@ class Klaxon(AddOn):
                 # usually when a site is archived in rapid succession.
                 if new_timestamp == old_timestamp:
                     sys.exit(0)
-            except savepagenow.exceptions.WaybackRuntimeError as e:
+            except savepagenow.exceptions.WaybackRuntimeError:
                 sys.exit(0)
-            except savepagenow.exceptions.CachedPage as c:
+            except savepagenow.exceptions.CachedPage:
                 sys.exit(0)
             self.send_notification(
                 f"Klaxon Alert: {site} Updated",
@@ -162,6 +176,7 @@ class Klaxon(AddOn):
             )
 
     def main(self):
+        # pylint:disable=attribute-defined-outside-init
         """Gets the site and selector from the Add-On run, checks  calls monitor"""
         # Gets the site and selector from the front-end yaml
         site = self.data.get("site")

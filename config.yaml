@@ -17,6 +17,10 @@ properties:
     title: Selector
     type: string
     description: CSS Selector on the page you would like to monitor.
+  filter_selector:
+    title: Filter
+    type: string
+    description: An optional CSS selector for elements on the page that should be ignored when checking for updates.
   slack_webhook:
     title: Slack Webhook
     type: string
