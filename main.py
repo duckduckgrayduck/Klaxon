@@ -132,9 +132,10 @@ class Klaxon(AddOn):
                 raise ValueError(f"Invalid CSS selector for filter_selector: {filter_selector}") from e #pylint:disable=line-too-long
             old_elements = [el for el in old_elements if not el.select_one(filter_selector)]
             new_elements = [el for el in new_elements if not el.select_one(filter_selector)]
-
+            print("Filter applied")
         # If there are no changes detected, you do not get a notification.
         if old_elements == new_elements:
+            print("Elements are the same as last time")
             sys.exit(0)
         else:
             # Generates a list of strings using prettify to pass to difflib
