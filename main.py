@@ -15,10 +15,19 @@ import savepagenow
 from documentcloud.addon import AddOn
 from documentcloud.toolbox import requests_retry_session
 from bs4 import BeautifulSoup, Tag
-
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_random_exponential,
+)  # for exponential backoff
 
 class Klaxon(AddOn):
     """Add-On that will monitor a site for changes and alert you for updates"""
+
+    @retry(wait=wait_random_exponential(min=5, max=120), stop=stop_after_attempt(10))
+    def capture_and_retry(self, site):
+        """ Tries to capture the link on Wayback machine with exponential backoff """
+        return savepagenow.capture(site, authenticate=True)
 
     def check_first_seen(self, site):
         """Checks to see if this site has ever been archived on Wayback"""
@@ -28,6 +37,7 @@ class Klaxon(AddOn):
         try:
             resp_json = response.json()
         except requests.exceptions.JSONDecodeError:
+            print("JSON Decode Error")
             sys.exit(0)
         if resp_json["archived_snapshots"] == {} and self.site_data == {}:
             first_seen_url = savepagenow.capture(site, authenticate=True)
@@ -145,10 +155,8 @@ class Klaxon(AddOn):
         # Accesses the workflow secrets to run Wayback save's with authentication
         os.environ["SAVEPAGENOW_ACCESS_KEY"] = os.environ["KEY"]
         os.environ["SAVEPAGENOW_SECRET_KEY"] = os.environ["TOKEN"]
-
         self.check_first_seen(site)
         archive_url = self.get_wayback_url(site)
-
         # Grab the elements for the archived page and the current site
         old_elements = self.get_elements(archive_url, selector)
         new_elements = self.get_elements(site, selector)
@@ -160,7 +168,6 @@ class Klaxon(AddOn):
                 raise ValueError(f"Invalid CSS selector for filter_selector: {filter_selector}") from e #pylint:disable=line-too-long
             old_elements = [self.exclude_elements(el, filter_selector) for el in old_elements]
             new_elements = [self.exclude_elements(el, filter_selector) for el in new_elements]
-
             print("-----------Old elements-----------")
             print(old_elements)
             print("-----------New elements-----------")
@@ -171,6 +178,7 @@ class Klaxon(AddOn):
             print("Elements are the same as last time")
             sys.exit(0)
         else:
+            print("Elements are updated on this page")
             # Generates a list of strings using prettify to pass to difflib
             old_tags = [x.prettify() for x in old_elements]
             new_tags = [y.prettify() for y in new_elements]
@@ -188,7 +196,8 @@ class Klaxon(AddOn):
 
             # Captures the current version of the site in Wayback.
             try:
-                new_archive_url = savepagenow.capture(site, authenticate=True)
+                print("Capturing the new site on Wayback")
+                new_archive_url = self.capture_and_retry(site)
                 new_timestamp = self.get_timestamp(new_archive_url)
                 self.site_data["timestamp"] = new_timestamp
                 self.store_event_data(self.site_data)
@@ -197,10 +206,13 @@ class Klaxon(AddOn):
                 # rare edge case where Wayback savepagenow returns the old archive URL
                 # usually when a site is archived in rapid succession.
                 if new_timestamp == old_timestamp:
+                    print("New timestamp is the same as the old timestamp.")
                     sys.exit(0)
             except savepagenow.exceptions.WaybackRuntimeError:
+                print("WaybackRunTimeError")
                 sys.exit(0)
             except savepagenow.exceptions.CachedPage:
+                print("CachedPageError")
                 sys.exit(0)
             self.send_notification(
                 f"Klaxon Alert: {site} Updated",
