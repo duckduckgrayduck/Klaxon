@@ -14,7 +14,7 @@ import requests
 import savepagenow
 from documentcloud.addon import AddOn
 from documentcloud.toolbox import requests_retry_session
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 
 class Klaxon(AddOn):
@@ -67,6 +67,30 @@ class Klaxon(AddOn):
             sys.exit(1)
         return res.group()
 
+    def exclude_elements(self, element, filter_selector):
+        """Creates a filtered """
+        # Create a new BeautifulSoup object with the content you want to preserve
+        new_soup = BeautifulSoup("", 'html.parser')
+
+        if isinstance(element, Tag):
+            new_element = new_soup.new_tag(element.name)
+            # pylint:disable=line-too-long
+            new_element.attrs = {k: v for k, v in element.attrs.items() if k.lower() != filter_selector.lower()}
+            for child in element.children:
+                if child.name and child.name.lower() == filter_selector.lower():
+                    # Exclude the unwanted tag
+                    continue
+                if child.name:
+                    # Recursively process child elements
+                    new_child = self.exclude_elements(child, filter_selector)
+                    new_element.append(new_child)
+                elif child.strip():
+                    # Preserve text content
+                    new_element.append(child.strip())
+
+            return new_element
+        return None
+
     def get_elements(self, site, selector):
         """Given a URL and css selector, pulls the elements using BeautifulSoup"""
         headers = {'User-Agent': 'Klaxon https://github.com/MuckRock/Klaxon'}
@@ -114,6 +138,7 @@ class Klaxon(AddOn):
 
     def monitor_with_selector(self, site, selector):
         """Monitors a particular site for changes and sends a diff via email"""
+        #pylint:disable=too-many-locals
         # Accesses the workflow secrets to run Wayback save's with authentication
         os.environ["SAVEPAGENOW_ACCESS_KEY"] = os.environ["KEY"]
         os.environ["SAVEPAGENOW_SECRET_KEY"] = os.environ["TOKEN"]
@@ -130,8 +155,13 @@ class Klaxon(AddOn):
                 _ = self.get_elements(site, filter_selector)
             except ValueError as e:
                 raise ValueError(f"Invalid CSS selector for filter_selector: {filter_selector}") from e #pylint:disable=line-too-long
-            old_elements = [el for el in old_elements if not el.select_one(filter_selector)]
-            new_elements = [el for el in new_elements if not el.select_one(filter_selector)]
+            old_elements = [self.exclude_elements(el, filter_selector) for el in old_elements]
+            new_elements = [self.exclude_elements(el, filter_selector) for el in new_elements]
+
+            print("-----------Old elements-----------")
+            print(old_elements)
+            print("-----------New elements-----------")
+            print(new_elements)
             print("Filter applied")
         # If there are no changes detected, you do not get a notification.
         if old_elements == new_elements:
