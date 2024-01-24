@@ -2,3 +2,4 @@ python-documentcloud==3.4.0
 requests
 savepagenow
 bs4
+tenacity
