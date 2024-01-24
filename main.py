@@ -17,6 +17,7 @@ from documentcloud.toolbox import requests_retry_session
 from bs4 import BeautifulSoup, Tag
 from tenacity import (
     retry,
+    RetryError,
     stop_after_attempt,
     wait_random_exponential,
 )  # for exponential backoff
@@ -208,18 +209,15 @@ class Klaxon(AddOn):
                 if new_timestamp == old_timestamp:
                     print("New timestamp is the same as the old timestamp.")
                     sys.exit(0)
-            except savepagenow.exceptions.WaybackRuntimeError:
-                print("WaybackRunTimeError")
+                self.send_notification(
+                    f"Klaxon Alert: {site} Updated",
+                    f"Get results here (you must be logged in!): {file_url} \n"
+                    f"New snapshot: {new_archive_url} \n"
+                    f"Visual content wayback comparison: {changes_url}",
+                )
+            except RetryError:
+                print("Issue with retrieving new URL from the Wayback Machine")
                 sys.exit(0)
-            except savepagenow.exceptions.CachedPage:
-                print("CachedPageError")
-                sys.exit(0)
-            self.send_notification(
-                f"Klaxon Alert: {site} Updated",
-                f"Get results here (you must be logged in!): {file_url} \n"
-                f"New snapshot: {new_archive_url} \n"
-                f"Visual content wayback comparison: {changes_url}",
-            )
 
     def main(self):
         # pylint:disable=attribute-defined-outside-init
