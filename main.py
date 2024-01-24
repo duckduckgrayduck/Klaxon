@@ -42,6 +42,7 @@ class Klaxon(AddOn):
             timestamp = self.get_timestamp(first_seen_url)
             self.site_data["timestamp"] = timestamp
             self.store_event_data(self.site_data)
+            self.set_message("Site archived on the Wayback machine for the first time.")
             sys.exit(0)
         if resp_json["archived_snapshots"] != {} and self.site_data == {}:
             self.site_data["timestamp"] = resp_json["archived_snapshots"]["closest"]["timestamp"]
