@@ -46,6 +46,7 @@ class Klaxon(AddOn):
         if resp_json["archived_snapshots"] != {} and self.site_data == {}:
             self.site_data["timestamp"] = resp_json["archived_snapshots"]["closest"]["timestamp"]
             self.store_event_data(self.site_data)
+            sys.exit(0)
 
     def send_notification(self, subject, message):
         """Send notifications via slack and email"""
