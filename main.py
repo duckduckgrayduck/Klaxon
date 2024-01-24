@@ -24,7 +24,7 @@ from tenacity import (
 class Klaxon(AddOn):
     """Add-On that will monitor a site for changes and alert you for updates"""
 
-    @retry(wait=wait_random_exponential(min=5, max=120), stop=stop_after_attempt(10))
+    @retry(wait=wait_random_exponential(min=30, max=120), stop=stop_after_attempt(5))
     def capture_and_retry(self, site):
         """ Tries to capture the link on Wayback machine with exponential backoff """
         return savepagenow.capture(site, authenticate=True)
