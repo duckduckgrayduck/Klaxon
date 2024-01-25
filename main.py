@@ -197,14 +197,15 @@ class Klaxon(AddOn):
             new_elements = [
                 self.exclude_elements(el, filter_selector) for el in new_elements
             ]
-            print("-----------Old elements-----------")
-            print(old_elements)
-            print("-----------New elements-----------")
-            print(new_elements)
+            # print("-----------Old elements-----------")
+            # print(old_elements)
+            # print("-----------New elements-----------")
+            # print(new_elements)
             print("Filter applied")
         # If there are no changes detected, you do not get a notification.
         if old_elements == new_elements:
             print("Elements are the same as last time")
+            self.set_message("No changes detected on the site")
             sys.exit(0)
         else:
             print("Elements are updated on this page")
@@ -232,7 +233,7 @@ class Klaxon(AddOn):
                 self.store_event_data(self.site_data)
                 old_timestamp = self.timestamp1
                 changes_url = self.get_changes_url(site, old_timestamp, new_timestamp)
-                # rare edge case where Wayback savepagenow returns the old archive URL
+                # edge case where Wayback savepagenow returns the old archive URL
                 # usually when a site is archived in rapid succession.
                 if new_timestamp == old_timestamp:
                     print("New timestamp is the same as the old timestamp.")

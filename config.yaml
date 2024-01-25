@@ -20,7 +20,7 @@ properties:
   filter_selector:
     title: Filter
     type: string
-    description: An optional CSS selector for elements on the page that should be ignored when checking for updates.
+    description: (Optional) HTML elements that you want to filter out from being compared (<a>, <p>, etc). 
   slack_webhook:
     title: Slack Webhook
     type: string
