@@ -22,23 +22,38 @@ from tenacity import (
     wait_random_exponential,
 )  # for exponential backoff
 
+
 class Klaxon(AddOn):
     """Add-On that will monitor a site for changes and alert you for updates"""
 
     @retry(wait=wait_random_exponential(min=30, max=120), stop=stop_after_attempt(5))
     def capture_and_retry(self, site):
-        """ Tries to capture the link on Wayback machine with exponential backoff """
+        """Tries to capture the link on Wayback machine with exponential backoff"""
         return savepagenow.capture(site, authenticate=True)
 
-    def check_first_seen(self, site):
-        """Checks to see if this site has ever been archived on Wayback"""
+    def retrieve_last_timestamp(self, site):
+        """Retrieves the timestamp for the last snapshot of a site"""
         archive_test = f"https://archive.org/wayback/available?url={site}"
-        headers = {'User-Agent': 'Klaxon https://github.com/MuckRock/Klaxon'}
+        headers = {"User-Agent": "Klaxon https://github.com/MuckRock/Klaxon"}
         response = requests_retry_session(retries=10).get(archive_test, headers=headers)
         try:
             resp_json = response.json()
         except requests.exceptions.JSONDecodeError:
-            print("JSON Decode Error")
+            print("JSONDecodeError")
+            sys.exit(0)
+        if resp_json["archived_snapshots"] != {}:
+            return resp_json["archived_snapshots"]["closest"]["timestamp"]
+        return None
+
+    def check_first_seen(self, site):
+        """Checks to see if this site has ever been archived on Wayback"""
+        archive_test = f"https://archive.org/wayback/available?url={site}"
+        headers = {"User-Agent": "Klaxon https://github.com/MuckRock/Klaxon"}
+        response = requests_retry_session(retries=10).get(archive_test, headers=headers)
+        try:
+            resp_json = response.json()
+        except requests.exceptions.JSONDecodeError:
+            print("JSONDecodeError")
             sys.exit(0)
         if resp_json["archived_snapshots"] == {} and self.site_data == {}:
             first_seen_url = savepagenow.capture(site, authenticate=True)
@@ -56,7 +71,9 @@ class Klaxon(AddOn):
             self.set_message("Site archived on the Wayback machine for the first time.")
             sys.exit(0)
         if resp_json["archived_snapshots"] != {} and self.site_data == {}:
-            self.site_data["timestamp"] = resp_json["archived_snapshots"]["closest"]["timestamp"]
+            self.site_data["timestamp"] = resp_json["archived_snapshots"]["closest"][
+                "timestamp"
+            ]
             self.store_event_data(self.site_data)
             self.set_message("Klaxon site saved in site data for the first run.")
             sys.exit(0)
@@ -82,14 +99,18 @@ class Klaxon(AddOn):
         return res.group()
 
     def exclude_elements(self, element, filter_selector):
-        """Creates a filtered """
+        """Creates a filtered"""
         # Create a new BeautifulSoup object with the content you want to preserve
-        new_soup = BeautifulSoup("", 'html.parser')
+        new_soup = BeautifulSoup("", "html.parser")
 
         if isinstance(element, Tag):
             new_element = new_soup.new_tag(element.name)
             # pylint:disable=line-too-long
-            new_element.attrs = {k: v for k, v in element.attrs.items() if k.lower() != filter_selector.lower()}
+            new_element.attrs = {
+                k: v
+                for k, v in element.attrs.items()
+                if k.lower() != filter_selector.lower()
+            }
             for child in element.children:
                 if child.name and child.name.lower() == filter_selector.lower():
                     # Exclude the unwanted tag
@@ -107,13 +128,15 @@ class Klaxon(AddOn):
 
     def get_elements(self, site, selector):
         """Given a URL and css selector, pulls the elements using BeautifulSoup"""
-        headers = {'User-Agent': 'Klaxon https://github.com/MuckRock/Klaxon'}
+        headers = {"User-Agent": "Klaxon https://github.com/MuckRock/Klaxon"}
         html = requests_retry_session(retries=10).get(site, headers=headers)
         soup = BeautifulSoup(html.text, "html.parser")
         try:
             elements = soup.select(selector)
         except ValueError as exc:
-            raise ValueError(f"Invalid CSS selector used: {selector} on site {site}") from exc
+            raise ValueError(
+                f"Invalid CSS selector used: {selector} on site {site}"
+            ) from exc
         return elements
 
     def get_wayback_url(self, site):
@@ -122,10 +145,9 @@ class Klaxon(AddOn):
         & pulls the most recent entry's timestamp. Else gets the last timestamp from event data.
         """
         if self.site_data == {}:
-            headers = {'User-Agent': 'Klaxon https://github.com/MuckRock/Klaxon'}
+            headers = {"User-Agent": "Klaxon https://github.com/MuckRock/Klaxon"}
             response = requests_retry_session(retries=10).get(
-                f"http://web.archive.org/cdx/search/cdx?url={site}", 
-                headers=headers
+                f"http://web.archive.org/cdx/search/cdx?url={site}", headers=headers
             )
             # Filter only for the successful entries
             successful_saves = [
@@ -134,14 +156,14 @@ class Klaxon(AddOn):
             # Get the last successful entry & timestamp for that entry
             last_save = successful_saves[-1]
             timestamp = self.get_timestamp(last_save)
-            #pylint:disable = attribute-defined-outside-init
+            # pylint:disable = attribute-defined-outside-init
             self.timestamp1 = timestamp
             # Generate the URL for the last successful save's raw HTML file
             full_url = f"https://web.archive.org/web/{timestamp}id_/{site}"
         else:
             # Gets the last seen timestamp from event data, must be a scheduled Add-On run.
             timestamp = self.site_data["timestamp"]
-             #pylint:disable = attribute-defined-outside-init
+            # pylint:disable = attribute-defined-outside-init
             self.timestamp1 = timestamp
             full_url = f"https://web.archive.org/web/{timestamp}id_/{site}"
         return full_url
@@ -152,7 +174,7 @@ class Klaxon(AddOn):
 
     def monitor_with_selector(self, site, selector):
         """Monitors a particular site for changes and sends a diff via email"""
-        #pylint:disable=too-many-locals
+        # pylint:disable=too-many-locals
         # Accesses the workflow secrets to run Wayback save's with authentication
         os.environ["SAVEPAGENOW_ACCESS_KEY"] = os.environ["KEY"]
         os.environ["SAVEPAGENOW_SECRET_KEY"] = os.environ["TOKEN"]
@@ -166,9 +188,15 @@ class Klaxon(AddOn):
             try:
                 _ = self.get_elements(site, filter_selector)
             except ValueError as e:
-                raise ValueError(f"Invalid CSS selector for filter_selector: {filter_selector}") from e #pylint:disable=line-too-long
-            old_elements = [self.exclude_elements(el, filter_selector) for el in old_elements]
-            new_elements = [self.exclude_elements(el, filter_selector) for el in new_elements]
+                raise ValueError(
+                    f"Invalid CSS selector for filter_selector: {filter_selector}"
+                ) from e  # pylint:disable=line-too-long
+            old_elements = [
+                self.exclude_elements(el, filter_selector) for el in old_elements
+            ]
+            new_elements = [
+                self.exclude_elements(el, filter_selector) for el in new_elements
+            ]
             print("-----------Old elements-----------")
             print(old_elements)
             print("-----------New elements-----------")
@@ -216,7 +244,26 @@ class Klaxon(AddOn):
                     f"Visual content wayback comparison: {changes_url}",
                 )
             except RetryError:
-                print("Issue with retrieving new URL from the Wayback Machine")
+                print("Issue with archiving the URL on the Wayback Machine")
+                latest_timestamp = self.retrieve_last_timestamp(site)
+                if (
+                    self.site_data["timestamp"] != latest_timestamp
+                    and latest_timestamp is not None
+                ):
+                    new_archive_url = (
+                        f"https://web.archive.org/web/{latest_timestamp}/{site}"
+                    )
+                    changes_url = self.get_changes_url(
+                        site, self.site_data["timestamp"], latest_timestamp
+                    )
+                    self.site_data["timestamp"] = latest_timestamp
+                    self.store_event_data(self.site_data)
+                    self.send_notification(
+                        f"Klaxon Alert: {site} Updated",
+                        f"Get results here (you must be logged in!): {file_url} \n"
+                        f"Most recent snapshot: {new_archive_url} \n"
+                        f"Visual content wayback comparison: {changes_url}",
+                    )
                 sys.exit(0)
 
     def main(self):
