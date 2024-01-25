@@ -260,7 +260,6 @@ class Klaxon(AddOn):
                     self.store_event_data(self.site_data)
                     self.send_notification(
                         f"Klaxon Alert: {site} Updated",
-                        f"Get results here (you must be logged in!): {file_url} \n"
                         f"Most recent snapshot: {new_archive_url} \n"
                         f"Visual content wayback comparison: {changes_url}",
                     )
