@@ -2,7 +2,9 @@ title: "Klaxon Cloud: Site Monitor and Alerts"
 description: >- 
    Klaxon enables reporters and editors to monitor scores of sites and files on the web for newsworthy changes. 
    Get email notifications when something changes. Provide a CSS selector to only monitor 
-   portions of a page you are interested in, otherwise you can supply * to monitor the entire page. To get started, copy the bookmarklet [Add to Klaxon][1] to your bookmarks, 
+   portions of a page you are interested in. You may supply * to monitor the entire page, but you may receive alerts for trivial changes.
+   Email alerts are sent to the primary email address on your DocumentCloud account. 
+   To get started, copy the bookmarklet [Add to Klaxon][1] to your bookmarks, 
    visit a page you are looking to monitor, and then click on the bookmark to activate Klaxon. 
 
    [1]: javascript:(function(){document.body.appendChild(document.createElement('script')).src='https://documentcloud-klaxon.s3.amazonaws.com/inject.js';})();
